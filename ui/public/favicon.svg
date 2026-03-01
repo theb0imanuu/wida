@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#0B0F14" rx="48" />
+  
+  <g fill="none" stroke="#2C8E99" stroke-linejoin="miter" stroke-miterlimit="10">
+    <path d="M 48 72 L 96 184 L 128 112 L 160 184 L 208 72" 
+          stroke-width="28" 
+          stroke-linecap="square" />
+          
+    <polygon points="172,72 208,72 208,108" 
+             fill="#2C8E99" 
+             stroke="none" />
+             
+    <path d="M 96 64 A 36 36 0 0 1 160 64" 
+          stroke-width="8" 
+          stroke-linecap="square" />
+    <path d="M 112 80 A 20 20 0 0 1 144 80" 
+          stroke-width="8" 
+          stroke-linecap="square" />
+  </g>
+</svg>
