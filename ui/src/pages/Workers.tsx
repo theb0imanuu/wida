@@ -58,7 +58,7 @@ export const Workers: React.FC<WorkersProps> = ({ workers }) => {
                       )}
                     </TableCell>
                     <TableCell className="text-primary font-medium">
-                      {w.jobs_completed.toLocaleString()}
+                      {(w.jobs_completed || 0).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-xs text-secondary flex items-center gap-2 mt-2">
                        <span className={`w-1.5 h-1.5 rounded-full ${isAlive ? 'bg-status-success' : 'bg-status-dead'}`}></span>
