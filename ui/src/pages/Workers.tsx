@@ -1,6 +1,8 @@
 import React from 'react';
 import type { WorkerStats } from '../types';
-import { StatusBadge } from '../components/StatusBadge';
+import { Badge } from '../components/ui/Badge';
+import { Card } from '../components/ui/Card';
+import { Table, TableHeader, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { Activity } from 'lucide-react';
 
 interface WorkersProps {
@@ -9,67 +11,66 @@ interface WorkersProps {
 
 export const Workers: React.FC<WorkersProps> = ({ workers }) => {
   return (
-    <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden animate-in fade-in duration-500">
-      <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            <Activity className="text-brand-500" /> Active Worker Nodes
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">Real-time status of all registered worker processes</p>
+          <h2 className="text-xl font-semibold text-primary flex items-center gap-2 tracking-tight">
+            <Activity size={20} className="text-secondary" /> Active Worker Nodes
+          </h2>
+          <p className="text-sm text-secondary mt-1">Real-time status of all registered worker processes.</p>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-100">
-          <thead className="bg-white">
+      
+      <Card className="p-0 overflow-hidden">
+        <Table>
+          <TableHeader>
             <tr>
-              <th className="px-8 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Worker ID</th>
-              <th className="px-8 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-8 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Current Execution</th>
-              <th className="px-8 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Jobs Processed</th>
-              <th className="px-8 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Heartbeat</th>
-              <th className="px-8 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              <TableHead>Worker ID</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Current Execution</TableHead>
+              <TableHead>Jobs Processed</TableHead>
+              <TableHead>Last Heartbeat</TableHead>
             </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-50 text-sm">
+          </TableHeader>
+          <tbody>
             {workers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-8 py-10 text-center text-gray-400">No active workers found in network registry.</td>
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-secondary">
+                  No active workers found in network registry.
+                </td>
               </tr>
             ) : (
               workers.map((w) => {
                 const isAlive = (new Date().getTime() - new Date(w.last_heartbeat).getTime()) < 60000;
-                const statusState = !isAlive ? 'dead' : w.status === 'running' ? 'running' : 'pending'; // 'pending' maps to our blue default colors for idle
+                const statusState = !isAlive ? 'dead' : w.status === 'running' ? 'running' : 'pending'; 
                 
                 return (
-                  <tr key={w.id} className="hover:bg-gray-50/50 transition-colors group">
-                    <td className="px-8 py-5 whitespace-nowrap text-gray-900 font-mono text-sm font-medium">{w.id}</td>
-                    <td className="px-8 py-5 whitespace-nowrap">
-                      <StatusBadge status={statusState === 'pending' ? 'idle' : statusState === 'dead' ? 'offline' : 'busy'} />
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap font-mono text-xs">
+                  <TableRow key={w.id}>
+                    <TableCell className="font-mono text-sm font-medium text-primary">{w.id}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusState}>{statusState === 'pending' ? 'idle' : statusState === 'dead' ? 'offline' : 'busy'}</Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-secondary">
                       {w.current_job_id ? (
-                        <span className="bg-brand-50 text-brand-700 px-2.5 py-1 rounded border border-brand-100">{w.current_job_id}</span>
+                        <span className="bg-white/5 px-2 py-0.5 rounded border border-border text-primary">{w.current_job_id}</span>
                       ) : (
-                        <span className="text-gray-400">---</span>
+                        <span className="opacity-50">---</span>
                       )}
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-gray-600 font-medium">
+                    </TableCell>
+                    <TableCell className="text-primary font-medium">
                       {w.jobs_completed.toLocaleString()}
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-gray-500 text-xs flex items-center gap-2">
-                       <div className={`w-1.5 h-1.5 rounded-full ${isAlive ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                       {new Date(w.last_heartbeat).toLocaleString()}
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-right">
-                      {/* Mock interactive worker actions removed */}
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="text-xs text-secondary flex items-center gap-2 mt-2">
+                       <span className={`w-1.5 h-1.5 rounded-full ${isAlive ? 'bg-status-success' : 'bg-status-dead'}`}></span>
+                       {new Date(w.last_heartbeat).toLocaleTimeString()}
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Card>
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { Jobs } from './pages/Jobs';
 import { Workers } from './pages/Workers';
 import { Scheduler } from './pages/Scheduler';
 import { DLQ } from './pages/DLQ';
+import { Settings } from './pages/Settings';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -90,6 +91,9 @@ export default function App() {
       )}
       {activeTab === 'DLQ' && (
         <DLQ dlq={dlq} />
+      )}
+      {activeTab === 'Settings' && (
+        <Settings />
       )}
     </Layout>
   );

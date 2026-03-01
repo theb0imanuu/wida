@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { Job } from '../types';
 import { PlusCircle, ListTree } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 interface QueuesProps {
   jobs: Job[];
@@ -36,16 +38,6 @@ export const Queues: React.FC<QueuesProps> = ({ jobs, onEnqueueJob }) => {
     queues.push({ name: 'default', pending: 0, running: 0, failed: 0, dlq: 0, lastEnqueued: '-' });
   }
 
-  // handleExpandQueue is omitted as routing state is not maintained
-
-  const formatJson = () => {
-    try {
-      const obj = JSON.parse(formData.payload);
-      setFormData({...formData, payload: JSON.stringify(obj, null, 2)});
-    } catch {
-      // Ignore if not currently valid JSON
-    }
-  };
   const submitJob = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -64,16 +56,12 @@ export const Queues: React.FC<QueuesProps> = ({ jobs, onEnqueueJob }) => {
       payload: parsedPayload,
       status: 'pending',
       max_retries: Number(formData.max_retries),
-      timeout: Number(formData.timeout) * 1000000, // naive ms to ns conversion
+      timeout: Number(formData.timeout) * 1000000, 
       retry_policy: { initial_interval: 1000000000, max_interval: 10000000000, max_attempts: Number(formData.max_retries) }
     };
 
-    if (formData.cron_expr) {
-      payloadObj.cron_expr = formData.cron_expr;
-    }
-    if (formData.dependencies) {
-      payloadObj.dependencies = formData.dependencies.split(',').map(s => s.trim());
-    }
+    if (formData.cron_expr) payloadObj.cron_expr = formData.cron_expr;
+    if (formData.dependencies) payloadObj.dependencies = formData.dependencies.split(',').map(s => s.trim());
 
     await onEnqueueJob(payloadObj);
     setLoading(false);
@@ -81,130 +69,106 @@ export const Queues: React.FC<QueuesProps> = ({ jobs, onEnqueueJob }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <ListTree className="text-brand-500" /> Queue Management
+          <h2 className="text-xl font-semibold text-primary flex items-center gap-2 tracking-tight">
+            <ListTree size={20} className="text-secondary" /> Queues Matrix
           </h2>
-          <p className="text-gray-500 text-sm mt-1">Monitor and manage job backlog distribution across multiple logical queues.</p>
+          <p className="text-sm text-secondary mt-1">Monitor throughput and latency per queue.</p>
         </div>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="px-5 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 shadow-sm transition-all flex items-center gap-2"
-        >
-          <PlusCircle size={18} /> Enqueue Job
-        </button>
+        <Button onClick={() => setShowModal(true)}>
+          <PlusCircle size={16} className="mr-2" /> Enqueue Job
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {queues.map(q => (
-          <div key={q.name} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex-1">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200 font-mono">
-                    {q.name}
-                  </span>
-                </div>
+          <Card key={q.name} className="flex flex-col group hover:border-[var(--text-secondary)] transition-colors cursor-default">
+            <div className="flex items-center justify-between mb-4">
+              <span className="px-2.5 py-1 text-xs font-mono font-semibold bg-white/5 text-primary rounded border border-border">
+                {q.name}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 flex-1">
+              <div className="flex flex-col">
+                <p className="text-[10px] text-secondary uppercase font-semibold tracking-wider mb-1">Pending</p>
+                <p className="text-2xl font-semibold text-primary">{q.pending.toLocaleString()}</p>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-blue-50/50 rounded-lg p-3">
-                  <p className="text-xs text-blue-600 uppercase font-semibold mb-1">Pending</p>
-                  <p className="text-2xl font-bold text-gray-900">{q.pending.toLocaleString()}</p>
-                </div>
-                <div className="bg-green-50/50 rounded-lg p-3">
-                  <p className="text-xs text-green-600 uppercase font-semibold mb-1">Running</p>
-                  <p className="text-2xl font-bold text-gray-900">{q.running.toLocaleString()}</p>
-                </div>
-                <div className="bg-orange-50/50 rounded-lg p-3">
-                  <p className="text-xs text-orange-600 uppercase font-semibold mb-1">Failed</p>
-                  <p className="text-2xl font-bold text-gray-900">{q.failed.toLocaleString()}</p>
-                </div>
-                <div className="bg-red-50/50 rounded-lg p-3">
-                  <p className="text-xs text-red-600 uppercase font-semibold mb-1">Dead</p>
-                  <p className="text-2xl font-bold text-gray-900">{q.dlq.toLocaleString()}</p>
-                </div>
+              <div className="flex flex-col">
+                <p className="text-[10px] text-running uppercase font-semibold tracking-wider mb-1">Running</p>
+                <p className="text-2xl font-semibold text-primary">{q.running.toLocaleString()}</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-[10px] text-failed uppercase font-semibold tracking-wider mb-1">Failed</p>
+                <p className="text-2xl font-semibold text-primary">{q.failed.toLocaleString()}</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-[10px] text-dead uppercase font-semibold tracking-wider mb-1">Dead</p>
+                <p className="text-2xl font-semibold text-primary">{q.dlq.toLocaleString()}</p>
               </div>
             </div>
-            <div className="px-6 py-3 bg-gray-50/80 text-xs text-gray-500 border-t border-gray-100">
-              Last Enqueued: {q.lastEnqueued !== '-' ? new Date(q.lastEnqueued).toLocaleString() : 'Never'}
+            <div className="mt-4 pt-4 border-t border-border text-[11px] text-secondary font-mono">
+              Last Enqueued / {q.lastEnqueued !== '-' ? new Date(q.lastEnqueued).toLocaleTimeString() : 'Never'}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
+      {/* Basic Enqueue Job Modal */}
       {showModal && (
         <React.Fragment>
-          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40 transition-opacity" onClick={() => setShowModal(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                <h3 className="text-lg font-bold text-gray-900">Enqueue New Job</h3>
-              </div>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" onClick={() => setShowModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 min-w-[320px]">
+            <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col p-6 shadow-2xl animate-in zoom-in-95 duration-200 border border-[var(--text-secondary)]">
+              <h3 className="text-lg font-semibold text-primary mb-6">Enqueue New Job</h3>
               
-              <form onSubmit={submitJob} className="flex-1 overflow-y-auto p-6 space-y-5">
-                <div className="grid grid-cols-2 gap-5">
+              <form onSubmit={submitJob} className="flex-1 overflow-y-auto space-y-5 flex flex-col min-h-0">
+                <div className="grid grid-cols-2 gap-5 shrink-0">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Job Name (ID)</label>
-                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" required />
+                    <label className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Job Name (ID)</label>
+                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 bg-black/20 border border-border rounded text-sm text-primary focus:ring-1 focus:ring-blue-500 focus:outline-none placeholder:text-secondary/50 font-mono" required />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Queue Selection</label>
-                    <input type="text" value={formData.queue} onChange={e => setFormData({...formData, queue: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono" required />
+                    <label className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Queue Selection</label>
+                    <input type="text" value={formData.queue} onChange={e => setFormData({...formData, queue: e.target.value})} className="w-full px-3 py-2 bg-black/20 border border-border rounded text-sm text-primary focus:ring-1 focus:ring-blue-500 focus:outline-none placeholder:text-secondary/50 font-mono" required />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 flex justify-between">
+                <div className="flex-1 flex flex-col min-h-48 shrink-0">
+                  <label className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2 flex justify-between shrink-0">
                     Payload Data (JSON)
-                    <button type="button" onClick={formatJson} className="text-brand-600 text-[10px] lowercase tracking-normal bg-brand-50 px-2 py-0.5 rounded cursor-pointer border border-brand-100">Format Prettier</button>
                   </label>
                   <textarea 
                     value={formData.payload} 
                     onChange={e => setFormData({...formData, payload: e.target.value})} 
-                    className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-500 focus:outline-none bg-[#1e1e1e] text-[#ce9178]" 
+                    className="w-full h-full px-3 py-3 border border-border rounded text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none bg-[#0B0F14] text-[#E6EDF3] font-mono resize-none overflow-y-auto shadow-inner" 
                     required 
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-5 shrink-0">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">CRON Expression (Optional)</label>
-                    <input type="text" placeholder="* * * * *" value={formData.cron_expr} onChange={e => setFormData({...formData, cron_expr: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+                    <label className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">CRON Expresion</label>
+                    <input type="text" placeholder="* * * * *" value={formData.cron_expr} onChange={e => setFormData({...formData, cron_expr: e.target.value})} className="w-full px-3 py-2 bg-black/20 border border-border rounded text-sm text-primary font-mono focus:ring-1 focus:ring-blue-500 focus:outline-none placeholder:text-secondary/50" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Timeout (MS)</label>
-                    <input type="number" min="1000" value={formData.timeout} onChange={e => setFormData({...formData, timeout: Number(e.target.value)})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" required />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Max Retries</label>
-                    <input type="number" min="0" max="100" value={formData.max_retries} onChange={e => setFormData({...formData, max_retries: Number(e.target.value)})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" required />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Dependencies (Comma separated IDs)</label>
-                    <input type="text" placeholder="job-1, job-2" value={formData.dependencies} onChange={e => setFormData({...formData, dependencies: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+                    <label className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Timeout (MS)</label>
+                    <input type="number" min="1000" value={formData.timeout} onChange={e => setFormData({...formData, timeout: Number(e.target.value)})} className="w-full px-3 py-2 bg-black/20 border border-border rounded text-sm text-primary focus:ring-1 focus:ring-blue-500 focus:outline-none placeholder:text-secondary/50" required />
                   </div>
                 </div>
               </form>
               
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                  Cancel
-                </button>
-                <button 
-                  onClick={submitJob}
-                  disabled={loading}
-                  className="px-5 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-70 flex items-center gap-2 shadow-sm"
-                >
-                  {loading ? 'Submitting...' : 'Enqueue'}
-                </button>
+              <div className="mt-6 flex justify-end gap-3 shrink-0 pt-4 border-t border-border">
+                <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
+                <Button variant="primary" onClick={submitJob} disabled={loading}>{loading ? 'Submitting...' : 'Enqueue Job'}</Button>
               </div>
-            </div>
+            </Card>
           </div>
         </React.Fragment>
       )}
     </div>
   );
 };
+

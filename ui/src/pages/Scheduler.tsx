@@ -1,6 +1,8 @@
 import React from 'react';
 import type { Job } from '../types';
 import { Clock, Network, CheckCircle, RefreshCw } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Table, TableHeader, TableRow, TableHead, TableCell } from '../components/ui/Table';
 
 interface SchedulerProps {
   jobs: Job[];
@@ -12,84 +14,86 @@ export const Scheduler: React.FC<SchedulerProps> = ({ jobs, isLeader }) => {
   const dagJobs = jobs.filter(j => j.dependencies && j.dependencies.length > 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <Clock className="text-brand-500" /> Scheduler Pipeline
+          <h2 className="text-xl font-semibold text-primary flex items-center gap-2 tracking-tight">
+            <Clock size={20} className="text-secondary" /> Scheduler Pipeline
           </h2>
-          <p className="text-gray-500 text-sm mt-1">Manage recurring CRON jobs and complex Directed Acyclic Graphs.</p>
+          <p className="text-sm text-secondary mt-1">Manage recurring CRON jobs and complex Directed Acyclic Graphs.</p>
         </div>
-        <div className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg shadow-sm flex items-center gap-2">
-          {isLeader ? <CheckCircle size={16} className="text-green-400" /> : <RefreshCw size={16} className="text-yellow-400 animate-spin" />}
+        <div className="px-3 py-1.5 bg-card border border-border text-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-2">
+          {isLeader ? <CheckCircle size={14} className="text-status-success" /> : <RefreshCw size={14} className="text-status-pending animate-spin" />}
           Leader Election: {isLeader ? 'Master' : 'Follower'} Node
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* CRON Section */}
-        <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden flex flex-col">
-          <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <RefreshCw className="text-blue-500" size={20} /> Recurring CRON Jobs
+        <Card className="flex flex-col p-0 overflow-hidden">
+          <div className="px-5 py-4 border-b border-border bg-black/20 flex justify-between items-center">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <RefreshCw className="text-status-pending" size={16} /> Recurring CRON Jobs
             </h3>
-            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full">{cronJobs.length} Active</span>
+            <span className="bg-status-pending/10 text-status-pending text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">{cronJobs.length} Active</span>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-white">
+            <Table>
+              <TableHeader>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Target ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Expression</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <TableHead>Job Target ID</TableHead>
+                  <TableHead>Expression</TableHead>
+                  <TableHead>Status</TableHead>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-50 text-sm">
+              </TableHeader>
+              <tbody>
                 {cronJobs.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-6 py-10 text-center text-gray-400 bg-gray-50/30">No CRON jobs scheduled.</td>
+                    <td colSpan={3} className="px-4 py-8 text-center text-sm text-secondary">
+                      No CRON jobs scheduled.
+                    </td>
                   </tr>
                 ) : (
                   cronJobs.map(job => (
-                    <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-900 text-xs font-semibold">{job.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 bg-gray-100 border border-gray-200 rounded text-xs font-mono text-gray-700 tracking-widest">{job.cron_expr}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-blue-600 text-xs font-semibold flex items-center gap-1"><CheckCircle size={14} /> Registered</span>
-                      </td>
-                    </tr>
+                    <TableRow key={job.id}>
+                      <TableCell className="font-mono text-xs font-medium text-primary">{job.id}</TableCell>
+                      <TableCell>
+                        <span className="px-1.5 py-0.5 bg-white/5 border border-border rounded text-xs font-mono text-secondary tracking-widest">{job.cron_expr}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-status-success text-xs font-medium flex items-center gap-1"><CheckCircle size={12} /> Registered</span>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
               </tbody>
-            </table>
+            </Table>
           </div>
-        </div>
+        </Card>
 
         {/* DAG Section */}
-        <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden flex flex-col">
-          <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Network className="text-purple-500" size={20} /> Directed Acyclic Graphs
+        <Card className="flex flex-col p-0 overflow-hidden">
+          <div className="px-5 py-4 border-b border-border bg-black/20 flex justify-between items-center">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <Network className="text-purple-500" size={16} /> Directed Acyclic Graphs
             </h3>
-            <span className="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full">{dagJobs.length} Bound</span>
+            <span className="bg-purple-500/10 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">{dagJobs.length} Bound</span>
           </div>
-          <div className="p-8 flex-1 flex flex-col items-center justify-center bg-gray-50/30">
+          <div className="p-6 flex-1 flex flex-col items-center justify-center">
             {dagJobs.length > 0 ? (
               <div className="w-full">
-                <p className="text-sm font-semibold text-gray-700 mb-4 text-center">Observed Dependencies in Pipeline</p>
+                <p className="text-[10px] font-semibold text-secondary uppercase tracking-wider mb-4 text-center">Observed Dependencies in Pipeline</p>
                 <div className="space-y-3">
                   {dagJobs.map(job => (
-                    <div key={job.id} className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded">{job.id}</span>
-                      <div className="h-px bg-purple-200 flex-1 mx-4 relative">
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 border-t-2 border-r-2 border-purple-400 rotate-45 transform"></div>
+                    <div key={job.id} className="bg-black/20 p-3 rounded-lg border border-border flex items-center justify-between">
+                      <span className="font-mono text-xs font-medium text-primary bg-white/5 border border-border px-2 py-1 rounded">{job.id}</span>
+                      <div className="h-px bg-purple-500/30 flex-1 mx-4 relative">
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 border-t border-r border-purple-500/50 rotate-45 transform"></div>
                       </div>
                       <div className="flex flex-col gap-1 items-end">
                         {job.dependencies!.map(dep => (
-                          <span key={dep} className="text-[10px] font-mono font-semibold px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded border border-purple-100">Waits for: {dep}</span>
+                          <span key={dep} className="text-[10px] font-mono font-medium px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded border border-purple-500/20">Waits for: {dep}</span>
                         ))}
                       </div>
                     </div>
@@ -97,16 +101,16 @@ export const Scheduler: React.FC<SchedulerProps> = ({ jobs, isLeader }) => {
                 </div>
               </div>
             ) : (
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4 border border-dashed border-gray-300">
-                  <Network size={24} />
+              <div className="text-center text-secondary">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-white/5 border border-border border-dashed mb-3">
+                  <Network size={20} />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900">No Complex DAGs</h4>
-                <p className="text-gray-500 text-xs mt-1 max-w-[200px] mx-auto text-center">Jobs with dependency arrays will map visually here.</p>
+                <h4 className="text-sm font-medium text-primary">No Complex DAGs</h4>
+                <p className="text-xs mt-1 max-w-[200px] mx-auto text-center">Jobs with dependency arrays will map visually here.</p>
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
       </div>
     </div>

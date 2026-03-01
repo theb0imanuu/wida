@@ -1,6 +1,9 @@
 import React from 'react';
 import type { GlobalStats, Job, WorkerStats, DLQJob } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Table, TableHeader, TableRow, TableHead, TableCell } from '../components/ui/Table';
 
 interface DashboardProps {
   stats: GlobalStats;
@@ -17,11 +20,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, jobs, workers, dlq,
 
   // Pie Chart Data (Status distribution)
   const pieData = [
-    { name: 'Pending', value: jobs.filter(j => j.status === 'pending').length, color: '#3B82F6' },
-    { name: 'Running', value: jobs.filter(j => j.status === 'running').length, color: '#10B981' },
-    { name: 'Success', value: jobs.filter(j => j.status === 'success').length, color: '#14B8A6' },
-    { name: 'Failed', value: jobs.filter(j => j.status === 'failed').length, color: '#F97316' },
-    { name: 'Dead', value: dlq.length, color: '#EF4444' }
+    { name: 'Pending', value: jobs.filter(j => j.status === 'pending').length, color: 'var(--status-pending)' },
+    { name: 'Running', value: jobs.filter(j => j.status === 'running').length, color: 'var(--status-running)' },
+    { name: 'Success', value: jobs.filter(j => j.status === 'success').length, color: 'var(--status-success)' },
+    { name: 'Failed', value: jobs.filter(j => j.status === 'failed').length, color: 'var(--status-failed)' },
+    { name: 'Dead', value: dlq.length, color: 'var(--status-dead)' }
   ].filter(d => d.value > 0);
 
   // Bar Chart Data (Queue backlog)
@@ -31,55 +34,50 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, jobs, workers, dlq,
   });
   const barData = Array.from(queueMap.entries()).map(([name, pending]) => ({ name, pending }));
 
-  const kpis = [
-    { name: 'Total Jobs', value: stats.totalJobs.toString(), change: 'Live', status: 'neutral' },
+  const kpis: { name: string, value: string, change: string, status: 'pending'|'running'|'success'|'failed'|'dead' }[] = [
+    { name: 'Total Jobs', value: stats.totalJobs.toString(), change: 'Live', status: 'pending' },
     { name: 'Active Workers', value: workers.length.toString(), change: 'Live', status: 'running' },
-    { name: 'Scheduler Status', value: isLeader ? 'Leader' : 'Standby', change: 'Live', status: isLeader ? 'running' : 'neutral' },
+    { name: 'Scheduler Status', value: isLeader ? 'Leader' : 'Standby', change: 'Live', status: isLeader ? 'success' : 'pending' },
     { name: 'Dead Letter Queue', value: stats.deadJobs.toString(), change: 'Live', status: 'dead' },
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* KPIs */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((stat) => (
-          <div key={stat.name} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-            <p className="text-sm font-semibold tracking-wide text-gray-500 uppercase">{stat.name}</p>
-            <div className="mt-4 flex items-baseline justify-between">
-              <p className="text-4xl font-bold text-gray-900 group-hover:text-brand-600 transition-colors">{stat.value}</p>
-              <span className={`text-sm font-medium px-2 py-1 rounded-md ${
-                stat.status === 'dead' ? 'bg-red-50 text-red-600' : 
-                stat.status === 'running' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
-              }`}>
-                {stat.change}
-              </span>
+          <Card key={stat.name} className="flex flex-col">
+            <p className="text-xs font-medium tracking-wide text-secondary uppercase mb-2">{stat.name}</p>
+            <div className="flex items-baseline justify-between mt-auto">
+              <p className="text-3xl font-semibold text-primary">{stat.value}</p>
+              <Badge variant={stat.status}>{stat.change}</Badge>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Line Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Jobs Processed (Last 6h)</h3>
-          <div className="h-72 w-full">
+        <Card className="lg:col-span-2 flex flex-col h-80">
+          <h3 className="text-sm font-medium text-primary mb-4">Jobs Processed (Last 6h)</h3>
+          <div className="flex-1 w-full min-h-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="time" stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
-                <RechartsTooltip contentStyle={{ borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                <Line type="monotone" dataKey="success" stroke="#10B981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="failed" stroke="#EF4444" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+              <LineChart data={lineData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                <XAxis dataKey="time" stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} />
+                <RechartsTooltip contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px' }} itemStyle={{ color: 'var(--text-primary)' }} />
+                <Line type="monotone" dataKey="success" stroke="var(--status-success)" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                <Line type="monotone" dataKey="failed" stroke="var(--status-failed)" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
 
         {/* Pie Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Status Distribution</h3>
-          <div className="h-72 w-full flex items-center justify-center">
+        <Card className="flex flex-col h-80">
+          <h3 className="text-sm font-medium text-primary mb-4">Status Distribution</h3>
+          <div className="flex-1 w-full min-h-0 flex items-center justify-center relative">
             {pieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -87,85 +85,81 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, jobs, workers, dlq,
                     data={pieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    paddingAngle={2}
                     dataKey="value"
+                    stroke="none"
                   >
                     {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <RechartsTooltip contentStyle={{ borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px' }} itemStyle={{ color: 'var(--text-primary)' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-gray-400">No data available</p>
+              <p className="text-secondary text-sm">No data available</p>
             )}
           </div>
-          <div className="flex flex-wrap gap-3 justify-center mt-2">
+          <div className="flex flex-wrap gap-2 py-2 mt-auto">
             {pieData.map((d) => (
-              <div key={d.name} className="flex items-center text-xs text-gray-600">
-                <span className="w-3 h-3 rounded-full mr-1.5" style={{ backgroundColor: d.color }}></span>
+              <div key={d.name} className="flex items-center text-xs text-secondary">
+                <span className="w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: d.color }}></span>
                 {d.name}
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bar Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Queue Backlog (Pending)</h3>
-          <div className="h-64 w-full">
+        <Card className="flex flex-col h-80">
+          <h3 className="text-sm font-medium text-primary mb-4">Queue Backlog (Pending)</h3>
+          <div className="flex-1 w-full min-h-0">
             {barData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                  <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
-                  <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                  <Bar dataKey="pending" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                <BarChart data={barData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} />
+                  <RechartsTooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px' }} itemStyle={{ color: 'var(--text-primary)' }} />
+                  <Bar dataKey="pending" fill="var(--status-pending)" radius={[2, 2, 0, 0]} maxBarSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-400">No pending jobs in any queue</div>
+              <div className="h-full flex items-center justify-center text-secondary text-sm">No pending jobs</div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Recent Activity Mini-Table */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Recent Activity</h3>
-          <div className="flex-1 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-white sticky top-0">
+        <Card className="flex flex-col h-80 overflow-hidden">
+          <h3 className="text-sm font-medium text-primary mb-4 shrink-0">Recent Activity</h3>
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <Table>
+              <TableHeader>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Job ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Queue</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <TableHead>Job ID</TableHead>
+                  <TableHead>Queue</TableHead>
+                  <TableHead>Status</TableHead>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-50 text-sm">
+              </TableHeader>
+              <tbody>
                 {jobs.slice(0, 5).map((job) => (
-                  <tr key={job.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-900 font-mono text-xs">{job.id.substring(0, 15)}...</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-xs">{job.queue}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`w-2 h-2 rounded-full inline-block mr-2 ${
-                        job.status === 'success' ? 'bg-teal-500' :
-                        job.status === 'running' ? 'bg-green-500' :
-                        job.status === 'failed' ? 'bg-orange-500' : 'bg-blue-500'
-                      }`}></span>
-                      <span className="capitalize">{job.status}</span>
-                    </td>
-                  </tr>
+                  <TableRow key={job.id}>
+                    <TableCell className="font-mono text-xs text-secondary">{job.id.substring(0, 15)}...</TableCell>
+                    <TableCell className="text-xs text-secondary">{job.queue}</TableCell>
+                    <TableCell>
+                      <Badge variant={job.status as any}>{job.status}</Badge>
+                    </TableCell>
+                  </TableRow>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -1,11 +1,30 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+:root {
+  /* Dark Mode Default */
+  --background: #0b0f14;
+  --card: #11161d;
+  --border: #1f2630;
+  --text-primary: #e6edf3;
+  --text-secondary: #9aa4af;
+
+  /* Status Colors */
+  --status-pending: #3b82f6;
+  --status-running: #10b981;
+  --status-success: #14b8a6;
+  --status-failed: #f97316;
+  --status-dead: #ef4444;
+
+  /* Base Setup */
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,56 +32,70 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+.light-theme {
+  color-scheme: light;
+  --background: #f7f9fb;
+  --card: #ffffff;
+  --border: #e6eaf0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  /* Use Inter as standard font */
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--text-primary);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Custom Utilities for easier mapping to Tailwind */
+@utility bg-background {
+  background-color: var(--background);
+}
+@utility bg-card {
+  background-color: var(--card);
+}
+@utility border-border {
+  border-color: var(--border);
+}
+@utility text-primary {
+  color: var(--text-primary);
+}
+@utility text-secondary {
+  color: var(--text-secondary);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+/* Status variants */
+@utility bg-status-pending {
+  background-color: var(--status-pending);
 }
-button:hover {
-  border-color: #646cff;
+@utility text-pending {
+  color: var(--status-pending);
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+@utility bg-status-running {
+  background-color: var(--status-running);
 }
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+@utility text-running {
+  color: var(--status-running);
+}
+@utility bg-status-success {
+  background-color: var(--status-success);
+}
+@utility text-success {
+  color: var(--status-success);
+}
+@utility bg-status-failed {
+  background-color: var(--status-failed);
+}
+@utility text-failed {
+  color: var(--status-failed);
+}
+@utility bg-status-dead {
+  background-color: var(--status-dead);
+}
+@utility text-dead {
+  color: var(--status-dead);
 }

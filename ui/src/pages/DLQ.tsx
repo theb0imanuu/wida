@@ -1,6 +1,9 @@
 import React from 'react';
 import type { DLQJob } from '../types';
 import { ShieldAlert, Download, AlertTriangle } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Table, TableHeader, TableRow, TableHead, TableCell } from '../components/ui/Table';
+import { Button } from '../components/ui/Button';
 
 interface DLQProps {
   dlq: DLQJob[];
@@ -22,79 +25,76 @@ export const DLQ: React.FC<DLQProps> = ({ dlq }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <ShieldAlert className="text-red-500" /> Dead Letter Queue
+          <h2 className="text-xl font-semibold text-primary tracking-tight flex items-center gap-2">
+            <ShieldAlert size={20} className="text-status-dead" /> Dead Letter Queue
           </h2>
-          <p className="text-gray-500 text-sm mt-1">Review unrecoverable jobs that exhausted all retry policies. Awaiting manual intervention.</p>
+          <p className="text-secondary text-sm mt-1">Review unrecoverable jobs that exhausted all retry policies.</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={exportCSV} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm">
-            <Download size={16} /> Export CSV
-          </button>
+          <Button variant="secondary" onClick={exportCSV}>
+            <Download size={14} className="mr-2" /> Export CSV
+          </Button>
         </div>
       </div>
 
-      <div className="bg-white shadow-sm border border-red-100 rounded-2xl overflow-hidden animate-in fade-in duration-500">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-red-50/50">
+      <Card className="p-0 overflow-hidden border-status-dead/30">
+        <Table>
+          <TableHeader className="bg-status-dead/5">
+            <tr>
+              <TableHead className="text-status-dead font-semibold">Failed Job ID</TableHead>
+              <TableHead className="text-status-dead font-semibold">Source Queue</TableHead>
+              <TableHead className="text-status-dead font-semibold">Fatal Reason</TableHead>
+              <TableHead className="text-status-dead font-semibold">Attempts Content</TableHead>
+              <TableHead className="text-status-dead font-semibold">Time of Death</TableHead>
+            </tr>
+          </TableHeader>
+          <tbody>
+            {dlq.length === 0 ? (
               <tr>
-                <th className="px-8 py-4 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">Failed Job ID</th>
-                <th className="px-8 py-4 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">Source Queue</th>
-                <th className="px-8 py-4 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">Fatal Reason</th>
-                <th className="px-8 py-4 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">Attempts Consumed</th>
-                <th className="px-8 py-4 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">Time of Death</th>
-                <th className="px-8 py-4 text-right text-xs font-semibold text-red-800 uppercase tracking-wider">Actions</th>
+                <td colSpan={5} className="px-8 py-16 text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-white/5 text-status-success mb-4">
+                    <ShieldAlert size={24} />
+                  </div>
+                  <p className="text-primary font-medium text-sm">DLQ is completely empty.</p>
+                  <p className="text-secondary text-xs mt-1">No unrecoverable errors detected recently.</p>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-50 text-sm">
-              {dlq.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-50 text-green-500 mb-4">
-                      <ShieldAlert size={32} />
-                    </div>
-                    <p className="text-gray-900 font-semibold">DLQ is completely empty.</p>
-                    <p className="text-gray-500 text-sm mt-1">Excellent! No unrecoverable errors detected recently.</p>
-                  </td>
-                </tr>
-              ) : (
-                dlq.map((d) => (
-                  <tr key={d.id} className="hover:bg-red-50/20 transition-colors group">
-                    <td className="px-8 py-5 whitespace-nowrap text-gray-900 font-mono text-sm font-medium">{d.id}</td>
-                    <td className="px-8 py-5 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">{d.queue}</span>
-                    </td>
-                    <td className="px-8 py-5 text-red-600 text-xs max-w-xs truncate font-mono bg-red-50/50 rounded-md p-2 m-2 border border-red-100" title={d.reason}>
+            ) : (
+              dlq.map((d) => (
+                <TableRow key={d.id} className="hover:bg-status-dead/5 border-status-dead/10">
+                  <TableCell className="font-mono text-sm font-medium text-primary">{d.id}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white/5 text-primary border border-border">{d.queue}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-status-dead text-xs max-w-xs truncate font-mono bg-status-dead/10 rounded p-1.5 border border-status-dead/20" title={d.reason}>
                       {d.reason}
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-gray-500 text-center font-medium">
-                      {d.attempts?.length || 0}
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-gray-500 text-xs">
-                      {new Date(d.failed_at).toLocaleString()}
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-right">
-                      {/* Interactive mock buttons removed by request */}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-secondary text-center text-sm">
+                    {d.attempts?.length || 0}
+                  </TableCell>
+                  <TableCell className="text-secondary text-xs">
+                    {new Date(d.failed_at).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </Card>
       
       {dlq.length > 0 && (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-5 flex items-start gap-4 shadow-sm animate-in fade-in slide-in-from-bottom-2">
-          <AlertTriangle className="text-red-500 shrink-0 mt-0.5" />
+        <div className="bg-status-dead/5 border border-status-dead/20 rounded-xl p-4 flex items-start gap-4 shadow-sm">
+          <AlertTriangle className="text-status-dead shrink-0 mt-0.5" size={18} />
           <div>
-            <h4 className="text-sm font-bold text-red-900">Alert Hook Triggered</h4>
-            <p className="text-sm text-red-700 mt-1 leading-relaxed">System notifications have been dispatched referencing {dlq.length} critical failures in the execution pipeline. Please ensure the relevant operational teams are reviewing the exact failure payloads.</p>
-            <button className="mt-3 text-sm text-red-600 font-semibold hover:text-red-800 underline decoration-red-300 underline-offset-4">Resend Webhook Alerts</button>
+            <h4 className="text-sm font-bold text-status-dead uppercase tracking-wide">Alert Hook Triggered</h4>
+            <p className="text-xs text-status-dead/80 mt-1 leading-relaxed max-w-2xl">
+              System notifications have been dispatched referencing {dlq.length} critical failures in the execution pipeline. Please ensure the relevant operational teams are reviewing the exact failure payloads.
+            </p>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, ListTree, List, Server, Clock, AlertTriangle, Settings, Search, Moon, Sun } from 'lucide-react';
+import React from 'react';
+import { LayoutDashboard, ListTree, List, Server, Clock, AlertTriangle, Settings, Search } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,23 +9,22 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isLeader = true }) => {
-  const [darkTheme, setDarkTheme] = useState(false);
-  
   const tabs = [
-    { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Queues', icon: <ListTree size={20} /> },
-    { name: 'Jobs', icon: <List size={20} /> },
-    { name: 'Workers', icon: <Server size={20} /> },
-    { name: 'Scheduler', icon: <Clock size={20} /> },
-    { name: 'DLQ', icon: <AlertTriangle size={20} /> },
+    { name: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    { name: 'Queues', icon: <ListTree size={18} /> },
+    { name: 'Jobs', icon: <List size={18} /> },
+    { name: 'Workers', icon: <Server size={18} /> },
+    { name: 'Scheduler', icon: <Clock size={18} /> },
+    { name: 'DLQ', icon: <AlertTriangle size={18} /> },
+    { name: 'Settings', icon: <Settings size={18} /> },
   ];
 
   return (
-    <div className={`flex h-screen overflow-hidden ${darkTheme ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Sidebar */}
-      <div className={`w-64 flex flex-col border-r z-20 transition-colors ${darkTheme ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'}`}>
-        <div className={`flex items-center justify-center h-16 border-b ${darkTheme ? 'border-gray-700 bg-brand-900/20' : 'border-gray-200 bg-brand-50'}`}>
-          <span className={`text-2xl font-bold tracking-tight ${darkTheme ? 'text-brand-400' : 'text-brand-600'}`}>Wida</span>
+    <div className="flex h-screen overflow-hidden bg-background text-primary selection:bg-blue-500/30">
+      {/* Sidebar - minimal border, no heavy shadows */}
+      <div className="w-64 flex flex-col border-r border-border bg-card z-20">
+        <div className="flex items-center px-6 h-16 border-b border-border">
+          <span className="text-xl font-semibold tracking-tight text-primary">Wida</span>
         </div>
         <nav className="flex-1 overflow-y-auto py-6">
           <ul className="space-y-1 px-3">
@@ -33,72 +32,78 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               <li key={tab.name}>
                 <button
                   onClick={() => setActiveTab(tab.name)}
-                  className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === tab.name
-                      ? darkTheme ? 'text-white bg-brand-600' : 'text-white bg-brand-600 shadow-md'
-                      : darkTheme ? 'text-gray-400 hover:text-gray-100 hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-white/10 text-primary'
+                      : 'text-secondary hover:text-primary hover:bg-white/5'
                   }`}
                 >
-                  <span className={`mr-3 ${activeTab === tab.name ? 'text-white' : ''}`}>{tab.icon}</span>
+                  <span className={`mr-3 ${activeTab === tab.name ? 'text-primary' : 'text-secondary'}`}>
+                    {tab.icon}
+                  </span>
                   {tab.name}
                 </button>
               </li>
             ))}
           </ul>
         </nav>
-        <div className={`p-4 border-t ${darkTheme ? 'border-gray-700' : 'border-gray-200'}`}>
-          <button className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg ${darkTheme ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
-            <Settings size={20} className="mr-3" /> Settings
+        <div className="p-4 border-t border-border">
+          <button 
+            onClick={() => setActiveTab('Settings')}
+            className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'Settings'
+                ? 'bg-white/10 text-primary'
+                : 'text-secondary hover:text-primary hover:bg-white/5'
+            }`}
+          >
+            <Settings size={18} className="mr-3" /> Settings
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
         {/* Top Navbar */}
-        <header className={`flex items-center justify-between h-16 px-8 border-b z-10 sticky top-0 backdrop-blur-md ${darkTheme ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
-          <div className="flex items-center space-x-4 flex-1">
-            <h1 className="text-xl font-semibold tracking-tight w-48">{activeTab}</h1>
-            <div className={`relative flex-1 max-w-md hidden md:block`}>
-              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${darkTheme ? 'text-gray-500' : 'text-gray-400'}`} />
+        <header className="flex items-center justify-between h-16 px-8 border-b border-border z-10 sticky top-0 bg-background/80 backdrop-blur-sm">
+          <div className="flex items-center space-x-6 flex-1">
+            <h1 className="text-lg font-medium tracking-tight w-40">{activeTab}</h1>
+            <div className="relative flex-1 max-w-md hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
               <input 
                 type="text" 
-                placeholder="Search jobs by ID, queue, or status..." 
-                className={`w-full pl-10 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border ${darkTheme ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                placeholder="Search..." 
+                className="w-full pl-9 pr-4 py-1.5 text-sm rounded bg-card/50 border border-border text-primary focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder:text-secondary"
               />
             </div>
           </div>
           
           <div className="flex items-center space-x-6">
-            <span className={`relative inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
               isLeader 
-                ? darkTheme ? 'bg-green-900/30 text-green-400 border-green-800/50' : 'bg-green-50 text-green-700 border-green-200' 
-                : darkTheme ? 'bg-gray-800 text-gray-400 border-gray-700' : 'bg-gray-100 text-gray-600 border-gray-200'
+                ? 'bg-status-success/10 text-success border-status-success/20' 
+                : 'bg-white/5 text-secondary border-border'
             }`}>
               {isLeader && (
-                <span className="flex h-2 w-2 mr-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                <span className="flex h-1.5 w-1.5 mr-1.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-success opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-status-success"></span>
                 </span>
               )}
-              Leader: {isLeader ? 'Active' : 'Standby'}
+              {isLeader ? 'Leader Act' : 'Standby'}
             </span>
 
-            <button onClick={() => setDarkTheme(!darkTheme)} className={`p-2 rounded-full transition-colors ${darkTheme ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
-              {darkTheme ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${darkTheme ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-700'}`}>
-                A
-              </div>
+            {/* Profile Avatar Minimalist */}
+            <div className="flex items-center justify-center w-7 h-7 rounded-sm bg-card border border-border text-xs font-medium cursor-pointer hover:border-blue-500 transition-colors">
+              M
             </div>
           </div>
         </header>
 
         {/* Content Body */}
-        <main className={`flex-1 overflow-y-auto p-8 relative ${darkTheme ? 'text-gray-200' : 'text-gray-800'}`}>
-          {children}
+        <main className="flex-1 overflow-y-auto p-8 relative">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>
