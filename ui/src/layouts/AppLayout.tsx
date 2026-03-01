@@ -23,7 +23,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     <div className="flex h-screen overflow-hidden bg-background text-primary selection:bg-blue-500/30">
       {/* Sidebar - minimal border, no heavy shadows */}
       <div className="w-64 flex flex-col border-r border-border bg-card z-20">
-        <div className="flex items-center px-6 h-16 border-b border-border">
+        <div className="flex items-center gap-3 px-6 h-16 border-b border-border">
+          <img src="/icon.svg" alt="Wida Logo" className="w-6 h-6" />
           <span className="text-xl font-semibold tracking-tight text-primary">Wida</span>
         </div>
         <nav className="flex-1 overflow-y-auto py-6">
