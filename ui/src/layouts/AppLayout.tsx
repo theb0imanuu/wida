@@ -47,32 +47,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
             ))}
           </ul>
         </nav>
-        <div className="p-4 border-t border-border">
-          <button 
-            onClick={() => setActiveTab('Settings')}
-            className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-              activeTab === 'Settings'
-                ? 'bg-white/10 text-primary'
-                : 'text-secondary hover:text-primary hover:bg-white/5'
-            }`}
-          >
-            <Settings size={18} className="mr-3" /> Settings
-          </button>
-        </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
         {/* Top Navbar */}
         <header className="flex items-center justify-between h-16 px-8 border-b border-border z-10 sticky top-0 bg-background/80 backdrop-blur-sm">
-          <div className="flex items-center space-x-6 flex-1">
-            <h1 className="text-lg font-medium tracking-tight w-40">{activeTab}</h1>
-            <div className="relative flex-1 max-w-md hidden md:block">
+          <div className="flex items-center gap-6 flex-1">
+            <h1 className="text-lg font-semibold tracking-tight min-w-[120px]">{activeTab}</h1>
+            <div className="relative hidden md:block w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="w-full pl-9 pr-4 py-1.5 text-sm rounded bg-card/50 border border-border text-primary focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder:text-secondary"
+                className="w-full pl-9 pr-4 h-8 text-sm rounded-md bg-black/10 border border-border text-primary focus:outline-none focus:border-secondary transition-colors placeholder:text-secondary"
               />
             </div>
           </div>
