@@ -5,6 +5,8 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Table, TableHeader, TableRow, TableHead, TableCell } from '../components/ui/Table';
 
+type BadgeVariant = 'pending' | 'running' | 'success' | 'failed' | 'dead';
+
 interface DashboardProps {
   stats: GlobalStats;
   jobs: Job[];
@@ -15,8 +17,41 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ stats, jobs, workers, dlq, isLeader }) => {
 
-  // Historical timeseries data not currently implemented in backend
-  const lineData: Record<string, unknown>[] = [];
+  // Calculate historical timeseries data from jobs (Last 6 hours)
+  const lineData: { time: string; success: number; failed: number; timestamp: number }[] = [];
+  const now = new Date();
+  
+  // Create 6 hourly buckets
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+    lineData.push({
+      time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      success: 0,
+      failed: 0,
+      timestamp: d.getTime()
+    });
+  }
+
+  jobs.forEach(job => {
+    if (job.attempts && job.attempts.length > 0) {
+      const lastAttempt = job.attempts[job.attempts.length - 1];
+      if (lastAttempt.finished_at) {
+        const finishedTime = new Date(lastAttempt.finished_at).getTime();
+        // Ignore jobs finished before our 6-hour window
+        if (finishedTime >= lineData[0].timestamp) {
+          // Find the appropriate bucket
+          for (let i = 0; i < lineData.length; i++) {
+            const nextTimestamp = i < lineData.length - 1 ? lineData[i+1].timestamp : Infinity;
+            if (finishedTime >= lineData[i].timestamp && finishedTime < nextTimestamp) {
+              if (lastAttempt.status === 'success' || job.status === 'success') lineData[i].success++;
+              if (lastAttempt.status === 'failed' || job.status === 'failed') lineData[i].failed++;
+              break;
+            }
+          }
+        }
+      }
+    }
+  });
 
   // Pie Chart Data (Status distribution)
   const pieData = [
@@ -152,7 +187,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, jobs, workers, dlq,
                     <TableCell className="font-mono text-xs text-secondary">{job.id.substring(0, 15)}...</TableCell>
                     <TableCell className="text-xs text-secondary">{job.queue}</TableCell>
                     <TableCell>
-                      <Badge variant={job.status as any}>{job.status}</Badge>
+                      <Badge variant={job.status as BadgeVariant}>{job.status}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}
